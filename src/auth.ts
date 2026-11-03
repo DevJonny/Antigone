@@ -51,6 +51,10 @@ const redirectUri = () => new URL(import.meta.env.BASE_URL, location.origin).hre
 export function connect() {
   const state = crypto.randomUUID();
   storage('session')?.setItem(STATE_KEY, state);
+  location.assign(authUrl(state));
+}
+
+export function authUrl(state: string) {
   const params = new URLSearchParams({
     client_id: CLIENT_ID!,
     redirect_uri: redirectUri(),
@@ -59,7 +63,7 @@ export function connect() {
     include_granted_scopes: 'true',
     state,
   });
-  location.assign(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 }
 
 /** Reads the token Google returns in the URL fragment after `connect`, then clears the fragment. */

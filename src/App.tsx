@@ -4,20 +4,11 @@ import { InvoiceDialog } from './components/InvoiceDialog';
 import { RebookDialog } from './components/RebookDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBanner } from './components/StatusBanner';
-import { findPayLink, stageOf, type Appointment, type Stage } from './model';
+import { listView, STAGES } from './list';
+import { findPayLink, type Appointment, type Stage } from './model';
 import { useApp } from './useApp';
 
 type Dialog = { kind: 'invoice' | 'rebook'; appt: Appointment } | { kind: 'settings' } | null;
-
-const STAGES: { stage: Stage; label: string }[] = [
-  { stage: 'start', label: 'To do' },
-  { stage: 'notes', label: 'Notes written' },
-  { stage: 'invoiced', label: 'Invoiced' },
-  { stage: 'rebooked', label: 'Rebooked' },
-];
-
-// Dismissed and completed entries stay out of the way until asked for.
-const tucked = (a: Appointment) => Boolean(a.props.ag_hidden) || stageOf(a.props) === 'rebooked';
 
 // Per-device display preferences; losing them just means falling back to defaults.
 function usePref<T>(key: string, fallback: T) {
@@ -39,7 +30,6 @@ function usePref<T>(key: string, fallback: T) {
   return [value, setValue] as const;
 }
 
-const dayKey = (a: Appointment) => (a.allDay ? a.start : new Date(a.start).toLocaleDateString('en-CA'));
 const todayKey = () => new Date().toLocaleDateString('en-CA');
 const dayLabel = (key: string) =>
   key === todayKey()
@@ -54,21 +44,10 @@ export function App() {
   const todayRef = useRef<HTMLElement>(null);
   const scrolled = useRef(false);
 
-  // Completed entries are already hidden, so their filter would only ever show nothing.
-  const filters = hideTucked ? STAGES.filter((s) => s.stage !== 'rebooked') : STAGES;
-  const candidates = useMemo(
-    () => (hideTucked ? app.appointments.filter((a) => !tucked(a)) : app.appointments),
-    [app.appointments, hideTucked],
+  const { candidates, filters, counts, days } = useMemo(
+    () => listView(app.appointments, { hideTucked, stages: stageFilter }),
+    [app.appointments, hideTucked, stageFilter],
   );
-
-  const days = useMemo(() => {
-    const groups = new Map<string, Appointment[]>();
-    for (const a of candidates) {
-      if (!stageFilter.includes(stageOf(a.props))) continue;
-      groups.set(dayKey(a), [...(groups.get(dayKey(a)) ?? []), a]);
-    }
-    return [...groups];
-  }, [candidates, stageFilter]);
 
   const toggleStage = (stage: Stage) =>
     setStageFilter((f) => (f.includes(stage) ? f.filter((s) => s !== stage) : [...f, stage]));
@@ -110,7 +89,7 @@ export function App() {
               aria-pressed={stageFilter.includes(stage)}
               onClick={() => toggleStage(stage)}
             >
-              {label} <span className="count">{candidates.filter((a) => stageOf(a.props) === stage).length}</span>
+              {label} <span className="count">{counts[stage]}</span>
             </button>
           ))}
         </div>

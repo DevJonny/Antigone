@@ -1,11 +1,5 @@
-import { stageOf, type Appointment, type Stage } from '../model';
-
-const STAGE_LABEL: Record<Stage, string> = {
-  start: 'To do',
-  notes: 'Notes written',
-  invoiced: 'Invoiced',
-  rebooked: 'Rebooked',
-};
+import { STAGE_LABEL } from '../list';
+import { stageOf, type Appointment } from '../model';
 
 const timeRange = (a: Appointment) => {
   if (a.allDay) return 'All day';
