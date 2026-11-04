@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgProps, Appointment } from '../model';
 import { AppointmentCard } from './AppointmentCard';
-import { StatusBanner } from './StatusBanner';
+import { HIDE_AFTER_MS, StatusBanner } from './StatusBanner';
 
 afterEach(cleanup);
 
@@ -78,7 +78,6 @@ describe('StatusBanner', () => {
       pending: 0,
       error: null,
       onReconnect: vi.fn(),
-      onRefresh: vi.fn(),
       ...over,
     };
     const { container } = render(<StatusBanner {...props} />);
@@ -109,5 +108,36 @@ describe('StatusBanner', () => {
   it('shows errors', () => {
     banner({ error: 'Google Calendar error 500' });
     expect(screen.getByText('Google Calendar error 500')).toBeTruthy();
+  });
+
+  describe('hiding', () => {
+    afterEach(() => vi.useRealTimers());
+    const settle = () => act(() => vi.advanceTimersByTime(HIDE_AFTER_MS));
+
+    it('tucks away once connected with nothing to report', () => {
+      vi.useFakeTimers();
+      const { root } = banner();
+      expect(root.classList).not.toContain('is-hidden');
+      settle();
+      expect(root.classList).toContain('is-hidden');
+    });
+
+    it('stays up while changes are waiting or there is an error', () => {
+      vi.useFakeTimers();
+      const { root: waiting } = banner({ pending: 1 });
+      const { root: failed } = banner({ error: 'Google Calendar error 500' });
+      settle();
+      expect(waiting.classList).not.toContain('is-hidden');
+      expect(failed.classList).not.toContain('is-hidden');
+    });
+
+    it('comes back when the connection drops', () => {
+      vi.useFakeTimers();
+      const props = { lastSync: null, syncing: false, pending: 0, error: null, onReconnect: vi.fn() };
+      const { container, rerender } = render(<StatusBanner connection="connected" {...props} />);
+      settle();
+      rerender(<StatusBanner connection="offline" {...props} />);
+      expect(container.firstElementChild!.classList).not.toContain('is-hidden');
+    });
   });
 });
