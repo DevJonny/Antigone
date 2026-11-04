@@ -24,7 +24,7 @@ Pushing to `main` deploys to production via `.github/workflows/deploy.yml`.
 
 - **No backend.** All state lives in each event's `extendedProperties.private` (`ag_*` keys, see DESIGN.md); IndexedDB is only a cache and edit queue. Keys must stay ≤44 chars and values ≤1024, or Google silently drops or truncates them.
 - **Stages count only in order** (`stageOf`). Rebooked but not invoiced is still orange.
-- **Sign-in is a full-page redirect**, not a popup, because popups don't return from iOS Home Screen apps. Tokens last an hour with no refresh; the banner must always show whether the app is connected, offline or signed out.
+- **Sign-in is a full-page redirect**, not a popup, because popups don't return from iOS Home Screen apps. Tokens last an hour with no refresh; the banner must always show when the app is offline or signed out. It hides only when connected with nothing queued and no error.
 - **`base: '/Antigone/'`** is part of the OAuth redirect URI registered with Google. Changing it breaks sign-in.
 - **SumUp has no payment-link API.** Each client's reusable link is pasted once and carried forward; don't add SumUp API calls without revisiting that.
 - Rebooking needs a live connection; every other edit queues offline.

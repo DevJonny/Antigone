@@ -78,14 +78,20 @@ export function App() {
         pending={app.pending}
         error={app.error}
         onReconnect={app.reconnect}
-        onRefresh={app.sync}
       />
       <main>
         <div className="app-bar">
           <h1>Appointments</h1>
-          <button className="icon-button" aria-label="Settings" onClick={() => setDialog({ kind: 'settings' })}>
-            <Icon name="settings" size={24} />
-          </button>
+          <div className="app-bar-actions">
+            {app.connection === 'connected' && (
+              <button className="icon-button" aria-label="Refresh" onClick={app.sync} disabled={app.syncing}>
+                <Icon name="refresh" size={24} />
+              </button>
+            )}
+            <button className="icon-button" aria-label="Settings" onClick={() => setDialog({ kind: 'settings' })}>
+              <Icon name="settings" size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="filters" role="group" aria-label="Filter by status">

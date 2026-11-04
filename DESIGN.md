@@ -40,11 +40,13 @@ Creates a new event on the same calendar with the same title and duration at a c
 
 ## Connection
 
-Google's browser-only sign-in gives one-hour tokens with no refresh. Sign-in is a full-page redirect rather than a popup, because popups don't return reliably from iOS Home Screen apps. Targets are iPhone, iPad and laptop. A banner is always visible:
+Google's browser-only sign-in gives one-hour tokens with no refresh. Sign-in is a full-page redirect rather than a popup, because popups don't return reliably from iOS Home Screen apps. Targets are iPhone, iPad and laptop. A banner shows the connection state:
 
-- **Green** — connected and live.
+- **Green** — connected and live. Shown for two seconds, then it collapses away; no banner means connected. It stays up while edits are queued or after an error.
 - **Amber** — offline; showing cached data, last sync time, and queued edits.
 - **Red** — signed out or token expired; a Reconnect button.
+
+Refresh lives in the app bar, beside Settings, while connected.
 
 ## Entries
 
