@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AppointmentCard } from './components/AppointmentCard';
+import { Icon } from './components/Icon';
 import { InvoiceDialog } from './components/InvoiceDialog';
 import { RebookDialog } from './components/RebookDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBanner } from './components/StatusBanner';
 import { listView, STAGES } from './list';
 import { findPayLink, type Appointment, type Stage } from './model';
+import { applyTheme, THEME_KEY, type Theme } from './theme';
 import { useApp } from './useApp';
 
 type Dialog = { kind: 'invoice' | 'rebook'; appt: Appointment } | { kind: 'settings' } | null;
@@ -41,7 +43,10 @@ export function App() {
   const [dialog, setDialog] = useState<Dialog>(null);
   const [hideTucked, setHideTucked] = usePref('antigone.hideTucked', true);
   const [stageFilter, setStageFilter] = usePref<Stage[]>('antigone.stages', STAGES.map((s) => s.stage));
+  const [theme, setTheme] = usePref<Theme>(THEME_KEY, 'system');
   const todayRef = useRef<HTMLElement>(null);
+
+  useEffect(() => applyTheme(theme), [theme]);
   const scrolled = useRef(false);
 
   const { candidates, filters, counts, days } = useMemo(
@@ -76,9 +81,11 @@ export function App() {
         onRefresh={app.sync}
       />
       <main>
-        <div className="toolbar">
+        <div className="app-bar">
           <h1>Appointments</h1>
-          <button onClick={() => setDialog({ kind: 'settings' })}>Settings</button>
+          <button className="icon-button" aria-label="Settings" onClick={() => setDialog({ kind: 'settings' })}>
+            <Icon name="settings" size={24} />
+          </button>
         </div>
 
         <div className="filters" role="group" aria-label="Filter by status">
@@ -89,7 +96,9 @@ export function App() {
               aria-pressed={stageFilter.includes(stage)}
               onClick={() => toggleStage(stage)}
             >
-              {label} <span className="count">{counts[stage]}</span>
+              <span className="dot" aria-hidden />
+              {label}
+              <span className="count">{counts[stage]}</span>
             </button>
           ))}
         </div>
@@ -156,9 +165,10 @@ export function App() {
       {dialog?.kind === 'settings' && (
         <SettingsDialog
           calendars={app.calendars}
-          settings={{ calendarIds: app.selected, hideTucked }}
-          onSave={({ calendarIds, hideTucked }) => {
+          settings={{ calendarIds: app.selected, hideTucked, theme }}
+          onSave={({ calendarIds, hideTucked, theme }) => {
             setHideTucked(hideTucked);
+            setTheme(theme);
             const changed = calendarIds.length !== app.selected.length || calendarIds.some((id) => !app.selected.includes(id));
             if (app.calendars.length > 0 && changed) app.chooseCalendars(calendarIds);
           }}

@@ -49,3 +49,9 @@ Google's browser-only sign-in gives one-hour tokens with no refresh. Sign-in is 
 ## Entries
 
 All entries in the window (90 days back, 90 days ahead) from the selected calendars are shown in date order. Completed (green) entries are hidden by default, and any entry can be dismissed; a Settings toggle reveals both. Status filter chips narrow the list further. Settings also holds calendar selection.
+
+## Look
+
+iOS-style, since it runs on iPhone, iPad and Mac: system font, grouped grey background, tint-blue controls. Cards are neutral; each stage shows as a thick left edge in the system red, orange, yellow or green, plus a tinted label and done-step buttons. Full colour fills were tried and were too loud, especially in dark mode. Material 3 was tried too and felt out of place on Apple devices.
+
+Light and dark follow the device, or can be forced in Settings.

@@ -34,4 +34,5 @@ Pushing to `main` deploys to production via `.github/workflows/deploy.yml`.
 - Pin exact dependency versions, at least two weeks old.
 - Wrap every `localStorage`/IndexedDB access in try/catch and fall back gracefully.
 - Touch targets are at least 44px; check layouts at phone width.
+- Styling is iOS-like (see DESIGN.md → Look). Colours are `light-dark()` tokens in `styles.css`; check both themes. `light-dark()` takes colours only, and needs iOS 17.5+.
 - Keep logic in the pure modules and test it there; `useApp.test.tsx` covers sync against a fake Calendar API.

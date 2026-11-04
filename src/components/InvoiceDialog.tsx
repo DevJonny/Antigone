@@ -39,7 +39,7 @@ export function InvoiceDialog({ appt, initialLink, onSent, onClose }: Props) {
   return (
     <Modal title={`Invoice ${appt.title}`} onClose={onClose}>
       <label className="field">
-        SumUp payment link
+        <span>SumUp payment link</span>
         <input type="url" inputMode="url" placeholder="https://pay.sumup.com/…" value={link} onChange={(e) => setLink(e.target.value)} />
       </label>
       {!initialLink && (
@@ -47,8 +47,8 @@ export function InvoiceDialog({ appt, initialLink, onSent, onClose }: Props) {
       )}
       {error && <p className="error">{error}</p>}
       <div className="actions">
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={copy} disabled={!valid} className={canShare ? '' : 'primary'}>Copy and mark invoiced</button>
+        <button className="text" onClick={onClose}>Cancel</button>
+        <button onClick={copy} disabled={!valid} className={canShare ? 'tonal' : 'primary'}>Copy and mark invoiced</button>
         {canShare && <button className="primary" onClick={share} disabled={!valid}>Share link</button>}
       </div>
     </Modal>

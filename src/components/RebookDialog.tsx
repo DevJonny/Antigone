@@ -31,14 +31,14 @@ export function RebookDialog({ appt, connected, onRebook, onClose }: Props) {
   return (
     <Modal title={`Rebook ${appt.title}`} onClose={onClose}>
       <label className="field">
-        {appt.allDay ? 'Date' : 'Date and time'}
+        <span>{appt.allDay ? 'Date' : 'Date and time'}</span>
         <input type={appt.allDay ? 'date' : 'datetime-local'} value={start} onChange={(e) => setStart(e.target.value)} />
       </label>
       {!appt.allDay && <p className="hint">Same length as this appointment ({minutes} minutes).</p>}
       {!connected && <p className="error">Rebooking needs a connection to Google. Reconnect first.</p>}
       {error && <p className="error">{error}</p>}
       <div className="actions">
-        <button onClick={onClose}>Cancel</button>
+        <button className="text" onClick={onClose}>Cancel</button>
         <button className="primary" onClick={submit} disabled={!connected || !start || saving}>
           {saving ? 'Creating…' : 'Create appointment'}
         </button>

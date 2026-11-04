@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Antigone',
         short_name: 'Antigone',
         description: 'Appointments from Google Calendar, tracked through notes, invoicing and rebooking.',
-        theme_color: '#1f2933',
-        background_color: '#f7f7f5',
+        theme_color: '#f2f2f7',
+        background_color: '#f2f2f7',
         display: 'standalone',
         icons: [
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },

@@ -1,11 +1,19 @@
 import { useState } from 'react';
 import type { CalendarInfo } from '../calendar';
+import type { Theme } from '../theme';
 import { Modal } from './Modal';
 
 export interface Settings {
   calendarIds: string[];
   hideTucked: boolean;
+  theme: Theme;
 }
+
+const THEMES: { theme: Theme; label: string }[] = [
+  { theme: 'system', label: 'System' },
+  { theme: 'light', label: 'Light' },
+  { theme: 'dark', label: 'Dark' },
+];
 
 interface Props {
   calendars: CalendarInfo[];
@@ -17,6 +25,7 @@ interface Props {
 export function SettingsDialog({ calendars, settings, onSave, onClose }: Props) {
   const [ids, setIds] = useState(new Set(settings.calendarIds));
   const [hideTucked, setHideTucked] = useState(settings.hideTucked);
+  const [theme, setTheme] = useState(settings.theme);
 
   const toggle = (id: string) =>
     setIds((s) => {
@@ -27,6 +36,16 @@ export function SettingsDialog({ calendars, settings, onSave, onClose }: Props) 
 
   return (
     <Modal title="Settings" onClose={onClose}>
+      <h3 className="section">Theme</h3>
+      <div className="segmented" role="radiogroup" aria-label="Theme">
+        {THEMES.map((t) => (
+          <button key={t.theme} role="radio" aria-checked={theme === t.theme} onClick={() => setTheme(t.theme)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <h3 className="section">Display</h3>
       <label className="check">
         <input type="checkbox" checked={hideTucked} onChange={(e) => setHideTucked(e.target.checked)} />
         Hide completed and dismissed
@@ -50,12 +69,12 @@ export function SettingsDialog({ calendars, settings, onSave, onClose }: Props) 
       )}
 
       <div className="actions">
-        <button onClick={onClose}>Cancel</button>
+        <button className="text" onClick={onClose}>Cancel</button>
         <button
           className="primary"
           disabled={calendars.length > 0 && ids.size === 0}
           onClick={() => {
-            onSave({ calendarIds: [...ids], hideTucked });
+            onSave({ calendarIds: [...ids], hideTucked, theme });
             onClose();
           }}
         >

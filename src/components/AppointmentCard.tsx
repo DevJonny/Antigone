@@ -1,5 +1,6 @@
 import { STAGE_LABEL } from '../list';
 import { stageOf, type Appointment } from '../model';
+import { Icon } from './Icon';
 
 const timeRange = (a: Appointment) => {
   if (a.allDay) return 'All day';
@@ -33,7 +34,7 @@ export function AppointmentCard({ appt, calendarName, onToggleNotes, onInvoice, 
         </div>
         <div className="card-side">
           <span className="stage-label">{STAGE_LABEL[stage]}</span>
-          <button className="hide-button" onClick={onToggleHidden}>{hidden ? 'Unhide' : 'Hide'}</button>
+          <button className="text hide-button" onClick={onToggleHidden}>{hidden ? 'Unhide' : 'Hide'}</button>
         </div>
       </div>
       <div className="steps">
@@ -48,7 +49,7 @@ export function AppointmentCard({ appt, calendarName, onToggleNotes, onInvoice, 
 function Step({ done, onClick, children }: { done: boolean; onClick: () => void; children: string }) {
   return (
     <button className={`step${done ? ' done' : ''}`} aria-pressed={done} onClick={onClick}>
-      {done && <span aria-hidden>✓ </span>}
+      {done && <Icon name="check" />}
       {children}
     </button>
   );

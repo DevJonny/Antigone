@@ -1,4 +1,5 @@
 import type { Connection } from '../useApp';
+import { Icon } from './Icon';
 
 const time = (ms: number) => {
   const d = new Date(ms);
@@ -30,7 +31,10 @@ export function StatusBanner({ connection, lastSync, syncing, pending, error, on
               <strong>Connected to Google.</strong> {syncing ? 'Syncing…' : synced}
               {waiting}
             </p>
-            <button onClick={onRefresh} disabled={syncing}>Refresh</button>
+            <button className="text" onClick={onRefresh} disabled={syncing}>
+              <Icon name="refresh" />
+              Refresh
+            </button>
           </>
         )}
         {connection === 'offline' && (

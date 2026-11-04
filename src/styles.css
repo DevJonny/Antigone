@@ -1,47 +1,33 @@
+/* iOS-style colours. Each is light-dark(light, dark), resolved by color-scheme: the device
+   setting unless Settings forces a theme through data-theme. */
 :root {
-  --bg: #f7f7f5;
-  --surface: #ffffff;
-  --text: #1f2933;
-  --muted: #5f6b7a;
-  --border: #dde1e6;
-  --primary: #1f2933;
-  --primary-text: #ffffff;
+  --bg: light-dark(#f2f2f7, #000000);
+  --surface: light-dark(#ffffff, #1c1c1e);
+  --sheet: light-dark(#f2f2f7, #1c1c1e);
+  --input: light-dark(#ffffff, #2c2c2e);
+  --label: light-dark(#000000, #ffffff);
+  --label-2: light-dark(#6c6c70, #98989f);
+  --separator: light-dark(#c6c6c8, #38383a);
+  --fill: light-dark(rgb(118 118 128 / 0.12), rgb(118 118 128 / 0.24));
+  --tint: light-dark(#007aff, #0a84ff);
+  --scrim: rgb(0 0 0 / 0.4);
 
-  --red: #e5484d;
-  --orange: #f76b15;
-  --yellow: #e2b100;
-  --green: #30a46c;
-  --red-tint: #fdecec;
-  --orange-tint: #fef0e6;
-  --yellow-tint: #fdf6d8;
-  --green-tint: #e7f6ee;
+  /* Stage colours: the system red, orange, yellow and green. */
+  --red: light-dark(#ff3b30, #ff453a);
+  --orange: light-dark(#ff9500, #ff9f0a);
+  --yellow: light-dark(#ffcc00, #ffd60a);
+  --green: light-dark(#34c759, #30d158);
 
-  --status-ok: #e7f6ee;
-  --status-warn: #fef3d6;
-  --status-bad: #fde4e4;
-
-  color-scheme: light;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #111418;
-    --surface: #1a1f25;
-    --text: #e8ebee;
-    --muted: #9aa5b1;
-    --border: #2c333b;
-    --primary: #e8ebee;
-    --primary-text: #111418;
-    --red-tint: #3a1d1f;
-    --orange-tint: #3a2618;
-    --yellow-tint: #352e12;
-    --green-tint: #17301f;
-    --status-ok: #17301f;
-    --status-warn: #352e12;
-    --status-bad: #3a1d1f;
-    color-scheme: dark;
-  }
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
 }
 
 * {
@@ -51,42 +37,82 @@
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--text);
-  line-height: 1.4;
+  color: var(--label);
+  font-size: 15px;
+  line-height: 1.35;
+  -webkit-tap-highlight-color: transparent;
 }
+
+.icon {
+  flex: none;
+}
+
+/* Buttons: grey fill by default, with filled, tinted and plain variants. */
 
 button {
   font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
   min-height: 44px;
-  padding: 0 14px;
+  padding: 0 16px;
+  border: none;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
+  background: var(--fill);
+  color: var(--tint);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+button:active:not(:disabled) {
+  opacity: 0.6;
+}
+
+button:focus-visible {
+  outline: 3px solid var(--tint);
+  outline-offset: 2px;
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: default;
 }
 
 button.primary {
-  background: var(--primary);
-  color: var(--primary-text);
-  border-color: var(--primary);
-  font-weight: 600;
+  background: var(--tint);
+  color: #ffffff;
 }
 
-/* Connection banner */
+button.tonal {
+  background: color-mix(in srgb, var(--tint) 15%, transparent);
+}
+
+button.text,
+.icon-button {
+  background: transparent;
+  font-size: 17px;
+  font-weight: 400;
+  padding: 0 8px;
+}
+
+.icon-button {
+  width: 44px;
+  padding: 0;
+}
+
+/* Connection banner, tinted with its state's colour. */
 
 .status {
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 10px 16px;
-  padding-top: max(10px, env(safe-area-inset-top));
-  border-bottom: 3px solid;
+  padding: 8px 16px;
+  padding-top: max(8px, env(safe-area-inset-top));
+  background: color-mix(in srgb, var(--status) 22%, var(--bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--status) 50%, transparent);
 }
 
 .status p {
@@ -98,113 +124,107 @@ button.primary {
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
+  min-height: 44px;
 }
 
 .status-dot {
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
+  background: var(--status);
 }
 
 .status-connected {
-  background: var(--status-ok);
-  border-color: var(--green);
-}
-.status-connected .status-dot {
-  background: var(--green);
+  --status: var(--green);
 }
 
 .status-offline {
-  background: var(--status-warn);
-  border-color: var(--yellow);
-}
-.status-offline .status-dot {
-  background: var(--yellow);
+  --status: var(--yellow);
 }
 
 .status-signedOut,
 .status-unconfigured {
-  background: var(--status-bad);
-  border-color: var(--red);
+  --status: var(--red);
 }
-.status-signedOut .status-dot,
-.status-unconfigured .status-dot {
+
+.status-signedOut button.primary {
   background: var(--red);
 }
 
 .status-error {
-  max-width: 640px;
-  margin: 6px auto 0 !important;
-  font-size: 0.9em;
+  max-width: 720px;
+  margin: 4px auto 0 !important;
+  font-size: 13px;
 }
 
 /* Layout */
 
 main {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
-  padding: 16px 16px max(48px, calc(env(safe-area-inset-bottom) + 24px));
+  padding: 0 16px max(48px, calc(env(safe-area-inset-bottom) + 24px));
 }
 
-.toolbar {
+.app-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
+  min-height: 72px;
+  padding-bottom: 8px;
+  margin-right: -8px;
 }
 
-.toolbar h1 {
+.app-bar h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
 }
 
+/* One row of capsules that scrolls sideways, bleeding to the screen edges. */
 .filters {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 12px 0 4px;
+  gap: 8px;
+  margin: 0 -16px 8px;
+  padding: 0 16px 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
 }
 
 .filter {
+  flex: none;
   border-radius: 999px;
-  font-size: 0.9em;
-  color: var(--muted);
-  background: transparent;
-}
-
-.filter::before {
-  content: '';
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 6px;
-  border: 2px solid var(--stage);
-  vertical-align: -1px;
+  padding: 0 14px;
+  color: var(--label);
+  font-weight: 500;
 }
 
 .filter[aria-pressed='true'] {
-  color: var(--text);
-  background: var(--stage-tint);
-  border-color: var(--stage);
-  font-weight: 600;
+  background: var(--tint);
+  color: #ffffff;
 }
 
-.filter[aria-pressed='true']::before {
+.filter .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: var(--stage);
 }
 
 .filter .count {
-  font-weight: normal;
-  color: var(--muted);
+  opacity: 0.7;
 }
 
 .empty {
-  color: var(--muted);
+  color: var(--label-2);
   text-align: center;
   margin-top: 48px;
 }
@@ -214,13 +234,15 @@ main {
 }
 
 .day h2 {
-  font-size: 0.95rem;
-  color: var(--muted);
-  margin: 20px 0 8px;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--label-2);
+  margin: 24px 16px 6px;
 }
 
 .day h2.today {
-  color: var(--text);
+  color: var(--tint);
 }
 
 .day ul {
@@ -231,33 +253,33 @@ main {
   gap: 8px;
 }
 
-/* Stage colours */
+/* Stage roles */
 
 .stage-start {
   --stage: var(--red);
-  --stage-tint: var(--red-tint);
 }
 .stage-notes {
   --stage: var(--orange);
-  --stage-tint: var(--orange-tint);
 }
 .stage-invoiced {
   --stage: var(--yellow);
-  --stage-tint: var(--yellow-tint);
 }
 .stage-rebooked {
   --stage: var(--green);
-  --stage-tint: var(--green-tint);
 }
 
-/* Appointment card */
+/* Appointment card: neutral, its stage shown by a thick left edge and tinted chips. */
 
 .card {
-  background: var(--stage-tint);
-  border: 1px solid var(--border);
-  border-left: 8px solid var(--stage);
+  /* Done steps and the stage label share a tint of the stage colour; dark needs more. */
+  --accent: light-dark(
+    color-mix(in srgb, var(--stage) 22%, var(--surface)),
+    color-mix(in srgb, var(--stage) 34%, var(--surface))
+  );
+  background: var(--surface);
+  border-left: 6px solid var(--stage);
   border-radius: 12px;
-  padding: 12px;
+  padding: 14px 16px;
 }
 
 .card.is-hidden {
@@ -273,13 +295,15 @@ main {
 
 .card h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  letter-spacing: -0.4px;
 }
 
 .meta {
   margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 0.9em;
+  color: var(--label-2);
 }
 
 .card-side {
@@ -287,91 +311,99 @@ main {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  margin: -2px -8px -8px 0;
 }
 
 .stage-label {
-  font-size: 0.8em;
+  margin-right: 8px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--stage);
-  color: #fff;
-}
-
-.stage-invoiced .stage-label {
-  color: #1f2933;
+  line-height: 16px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--accent);
 }
 
 .steps {
   display: flex;
-  gap: 6px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .step {
   flex: 1;
   padding: 0 8px;
+  color: var(--label);
 }
 
 .step.done {
-  background: var(--surface);
-  border-color: var(--stage);
-  font-weight: 600;
+  background: var(--accent);
 }
 
 .hide-button {
-  margin-right: -8px;
-  padding: 0 8px;
-  color: var(--muted);
-  background: transparent;
-  border-color: transparent;
+  font-size: 15px;
 }
 
 /* Dialogs */
 
 .modal {
-  width: min(480px, calc(100vw - 32px));
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--surface);
-  color: var(--text);
+  width: min(560px, calc(100vw - 32px));
+  border: none;
+  border-radius: 14px;
+  background: var(--sheet);
+  color: var(--label);
   padding: 20px;
 }
 
 .modal::backdrop {
-  background: rgb(0 0 0 / 0.4);
+  background: var(--scrim);
 }
 
 .modal h2 {
   margin: 0 0 16px;
-  font-size: 1.2rem;
-}
-
-.field {
-  display: grid;
-  gap: 6px;
+  font-size: 20px;
   font-weight: 600;
 }
 
+.field {
+  display: block;
+  margin-top: 8px;
+}
+
+.field > span {
+  display: block;
+  margin: 0 0 6px 16px;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--label-2);
+}
+
 .field input {
+  display: block;
+  width: 100%;
   font: inherit;
-  font-weight: normal;
+  font-size: 17px;
   min-height: 44px;
-  padding: 0 12px;
+  padding: 0 16px;
+  border: none;
   border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
+  background: var(--input);
+  color: var(--label);
+}
+
+.field input:focus {
+  outline: 2px solid var(--tint);
 }
 
 .hint {
-  color: var(--muted);
-  font-size: 0.9em;
+  color: var(--label-2);
+  margin: 8px 16px 0;
+  font-size: 13px;
 }
 
 .error {
   color: var(--red);
-  font-size: 0.9em;
+  margin: 8px 0 0;
 }
 
 .actions {
@@ -379,38 +411,66 @@ main {
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
-.calendar-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 10px;
+.section {
+  margin: 20px 0 6px 16px;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--label-2);
+}
+
+.modal h2 + .section {
+  margin-top: 0;
+}
+
+/* Segmented control: the chosen option is a raised white pill. */
+.segmented {
+  display: flex;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--fill);
+}
+
+.segmented button {
+  flex: 1;
+  min-height: 36px;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--label);
+  font-weight: 500;
+}
+
+.segmented button[aria-checked='true'] {
+  background: light-dark(#ffffff, #636366);
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.12);
 }
 
 .check {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-height: 44px;
+  font-size: 17px;
 }
 
 .check input {
   width: 20px;
   height: 20px;
   margin: 0;
+  accent-color: var(--tint);
 }
 
-.section {
-  margin: 16px 0 4px;
-  font-size: 0.95rem;
-  color: var(--muted);
+.calendar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .swatch {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: 50%;
 }
