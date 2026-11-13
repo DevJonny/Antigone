@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgProps, Appointment } from '../model';
 import { AppointmentCard } from './AppointmentCard';
+import { InvoiceDialog } from './InvoiceDialog';
 import { HIDE_AFTER_MS, StatusBanner } from './StatusBanner';
 
 afterEach(cleanup);
@@ -62,10 +63,32 @@ describe('AppointmentCard', () => {
     }
   });
 
+  it('labels a cash payment as Cash', () => {
+    renderCard({ ag_notes: '1', ag_invoiced: 'x', ag_cash: '1' });
+    expect(screen.getByRole('button', { name: /Cash/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText('Invoiced', { selector: '.stage-label' })).toBeTruthy();
+  });
+
   it('offers to unhide a dismissed entry', () => {
     const { card } = renderCard({ ag_hidden: '1' });
     expect(card.classList).toContain('is-hidden');
     expect(screen.getByRole('button', { name: 'Unhide' })).toBeTruthy();
+  });
+});
+
+describe('InvoiceDialog', () => {
+  // jsdom has no <dialog> behaviour.
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    this.setAttribute('open', '');
+  };
+
+  it('marks paid in cash without needing a link', () => {
+    const onPaidCash = vi.fn();
+    const onSent = vi.fn();
+    render(<InvoiceDialog appt={appt({ ag_notes: '1' })} onSent={onSent} onPaidCash={onPaidCash} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Paid in cash' }));
+    expect(onPaidCash).toHaveBeenCalledOnce();
+    expect(onSent).not.toHaveBeenCalled();
   });
 });
 

@@ -443,6 +443,11 @@ main {
   margin: 8px 0 0;
 }
 
+.cash-button {
+  width: 100%;
+  margin-top: 16px;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;

@@ -6,12 +6,13 @@ interface Props {
   appt: Appointment;
   initialLink?: string;
   onSent: (link: string) => void;
+  onPaidCash: () => void;
   onClose: () => void;
 }
 
 const canShare = typeof navigator.share === 'function';
 
-export function InvoiceDialog({ appt, initialLink, onSent, onClose }: Props) {
+export function InvoiceDialog({ appt, initialLink, onSent, onPaidCash, onClose }: Props) {
   const [link, setLink] = useState(initialLink ?? '');
   const [error, setError] = useState<string | null>(null);
   const valid = /^https:\/\/\S+$/.test(link.trim());
@@ -46,6 +47,7 @@ export function InvoiceDialog({ appt, initialLink, onSent, onClose }: Props) {
         <p className="hint">Create a reusable payment link for this client in the SumUp app, then paste it here. It's remembered for next time.</p>
       )}
       {error && <p className="error">{error}</p>}
+      <button className="tonal cash-button" onClick={onPaidCash}>Paid in cash</button>
       <div className="actions">
         <button className="text" onClick={onClose}>Cancel</button>
         <button onClick={copy} disabled={!valid} className={canShare ? 'tonal' : 'primary'}>Copy and mark invoiced</button>

@@ -134,7 +134,8 @@ export function App() {
                   }}
                   onInvoice={() => {
                     if (!a.props.ag_invoiced) setDialog({ kind: 'invoice', appt: a });
-                    else if (confirmUndo('Mark as not invoiced?')) app.edit(a, { ag_invoiced: null });
+                    else if (confirmUndo(a.props.ag_cash ? 'Mark as not paid?' : 'Mark as not invoiced?'))
+                      app.edit(a, { ag_invoiced: null, ag_cash: null });
                   }}
                   onRebook={() => {
                     if (!a.props.ag_rebooked) setDialog({ kind: 'rebook', appt: a });
@@ -155,6 +156,10 @@ export function App() {
           initialLink={findPayLink(dialog.appt, app.appointments)}
           onSent={(link) => {
             app.markInvoiced(dialog.appt, link);
+            setDialog(null);
+          }}
+          onPaidCash={() => {
+            app.markPaidCash(dialog.appt);
             setDialog(null);
           }}
           onClose={() => setDialog(null)}

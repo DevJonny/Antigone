@@ -39,7 +39,7 @@ export function AppointmentCard({ appt, calendarName, onToggleNotes, onInvoice, 
       </div>
       <div className="steps">
         <Step done={Boolean(props.ag_notes)} onClick={onToggleNotes}>Notes</Step>
-        <Step done={Boolean(props.ag_invoiced)} onClick={onInvoice}>Invoice</Step>
+        <Step done={Boolean(props.ag_invoiced)} onClick={onInvoice}>{props.ag_invoiced && props.ag_cash ? 'Cash' : 'Invoice'}</Step>
         <Step done={Boolean(props.ag_rebooked)} onClick={onRebook}>Rebook</Step>
       </div>
     </li>

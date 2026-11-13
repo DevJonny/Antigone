@@ -25,6 +25,7 @@ All state lives on the Google Calendar event, in `extendedProperties.private`. T
 | `ag_hidden` | `"1"` if dismissed from the list |
 | `ag_client` | Client key (normalised event title) |
 | `ag_payLink` | The client's reusable SumUp payment link |
+| `ag_cash` | `"1"` if paid in cash rather than by link |
 
 ## Clients and payment links
 
@@ -32,7 +33,7 @@ SumUp's API has no payment-link or invoice endpoints, and its hosted checkouts e
 
 A client is identified by event title. When invoicing, the link is taken from the event, or from any other event with the same client key. Rebooking copies it onto the new event.
 
-Invoicing opens the device share sheet with the link, and marks the event invoiced once shared. Payment is not tracked.
+Invoicing opens the device share sheet with the link, and marks the event invoiced once shared. Payment is not tracked, except that the invoice dialog has a **Paid in cash** button: it marks the event invoiced without a link, and the card's step reads "Cash".
 
 ## Rebooking
 

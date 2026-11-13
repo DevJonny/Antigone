@@ -5,6 +5,8 @@ export interface AgProps {
   ag_hidden?: string;
   ag_client?: string;
   ag_payLink?: string;
+  /** "1" when paid in cash; set alongside `ag_invoiced`. */
+  ag_cash?: string;
 }
 
 /** A pending change to an event's private properties. `null` removes a value. */
