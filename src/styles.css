@@ -468,6 +468,65 @@ main {
   margin-top: 0;
 }
 
+/* Report: a period stepper over grouped rows of counts. */
+.period-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px -8px 0;
+}
+
+.period-nav div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.period-nav span {
+  color: var(--label-2);
+  font-size: 13px;
+}
+
+.report {
+  transition: opacity 200ms ease;
+}
+
+.report.is-loading {
+  opacity: 0.4;
+}
+
+.report-group {
+  list-style: none;
+  margin: 0;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--input);
+}
+
+.report-group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  border-bottom: 0.5px solid var(--separator);
+}
+
+.report-group li:last-child {
+  border-bottom: none;
+}
+
+.report-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.report-share {
+  margin-right: 12px;
+  color: var(--label-2);
+  font-weight: 400;
+}
+
 /* Segmented control: the chosen option is a raised white pill. */
 .segmented {
   display: flex;

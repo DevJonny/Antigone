@@ -197,6 +197,17 @@ export function useApp() {
     edit(appt, { ag_invoiced: new Date().toISOString(), ag_paidBy: method, ag_cash: null, ag_client: clientKey(appt.title) });
   }, [edit]);
 
+  /**
+   * Fetches a reporting period, which can reach beyond the cached window, with queued
+   * edits applied. Null when not connected, so the caller can fall back to the cache.
+   */
+  const loadRange = useCallback(async (from: Date, to: Date): Promise<Appointment[] | null> => {
+    const t = tokenRef.current;
+    if (!isValid(t) || !navigator.onLine) return null;
+    const lists = await Promise.all((selectedRef.current ?? []).map((id) => listEvents(t.accessToken, id, from, to)));
+    return applyEdits(lists.flat(), queueRef.current);
+  }, []);
+
   /** Needs a live connection: the new event's ID must exist before the original can point to it. */
   const rebook = useCallback(async (appt: Appointment, newStart: string) => {
     const t = tokenRef.current;
@@ -239,6 +250,7 @@ export function useApp() {
     markInvoiced,
     markPaid,
     rebook,
+    loadRange,
     chooseCalendars,
   };
 }

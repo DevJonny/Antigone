@@ -3,6 +3,7 @@ import { AppointmentCard } from './components/AppointmentCard';
 import { Icon } from './components/Icon';
 import { InvoiceDialog } from './components/InvoiceDialog';
 import { RebookDialog } from './components/RebookDialog';
+import { ReportDialog } from './components/ReportDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBanner } from './components/StatusBanner';
 import { listView, STAGES } from './list';
@@ -10,7 +11,7 @@ import { defaultPayMethod, findPayLink, paymentOf, type Appointment, type Stage 
 import { applyTheme, THEME_KEY, type Theme } from './theme';
 import { useApp } from './useApp';
 
-type Dialog = { kind: 'invoice' | 'rebook'; appt: Appointment } | { kind: 'settings' } | null;
+type Dialog = { kind: 'invoice' | 'rebook'; appt: Appointment } | { kind: 'settings' } | { kind: 'report' } | null;
 
 // Per-device display preferences; losing them just means falling back to defaults.
 function usePref<T>(key: string, fallback: T) {
@@ -88,6 +89,9 @@ export function App() {
                 <Icon name="refresh" size={24} />
               </button>
             )}
+            <button className="icon-button" aria-label="Report" onClick={() => setDialog({ kind: 'report' })}>
+              <Icon name="chart" size={24} />
+            </button>
             <button className="icon-button" aria-label="Settings" onClick={() => setDialog({ kind: 'settings' })}>
               <Icon name="settings" size={24} />
             </button>
@@ -179,6 +183,9 @@ export function App() {
           }}
           onClose={() => setDialog(null)}
         />
+      )}
+      {dialog?.kind === 'report' && (
+        <ReportDialog cached={app.appointments} loadRange={app.loadRange} onClose={() => setDialog(null)} />
       )}
       {dialog?.kind === 'settings' && (
         <SettingsDialog

@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgProps, Appointment } from '../model';
 import { AppointmentCard } from './AppointmentCard';
 import { InvoiceDialog } from './InvoiceDialog';
 import { RebookDialog } from './RebookDialog';
+import { ReportDialog } from './ReportDialog';
 import { HIDE_AFTER_MS, StatusBanner } from './StatusBanner';
 
 afterEach(cleanup);
@@ -132,6 +133,26 @@ describe('RebookDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Complete without rebooking' }));
     expect(onComplete).toHaveBeenCalledOnce();
     expect(onRebook).not.toHaveBeenCalled();
+  });
+});
+
+describe('ReportDialog', () => {
+  it('opens on the current tax year and fetches it', async () => {
+    const loadRange = vi.fn().mockResolvedValue([]);
+    render(<ReportDialog cached={[]} loadRange={loadRange} onClose={vi.fn()} />);
+    expect(screen.getByRole('radio', { name: 'Tax year' }).getAttribute('aria-checked')).toBe('true');
+    const [from, to] = loadRange.mock.calls[0];
+    expect([from.getMonth(), from.getDate(), to.getFullYear() - from.getFullYear()]).toEqual([3, 6, 1]);
+    expect((screen.getByRole('button', { name: 'Next period' }) as HTMLButtonElement).disabled).toBe(true);
+    await waitFor(() => expect(screen.getByText(/leaving out hidden ones/)).toBeTruthy());
+  });
+
+  it('falls back to saved appointments when offline', async () => {
+    const seen = { ...appt({ ag_invoiced: 'x', ag_paidBy: 'cash' }), start: new Date(Date.now() - 3_600_000).toISOString() };
+    render(<ReportDialog cached={[seen]} loadRange={vi.fn().mockResolvedValue(null)} onClose={vi.fn()} />);
+    await waitFor(() => expect(screen.getByText(/^Offline/)).toBeTruthy());
+    const row = screen.getByText('Cash').closest('li')!;
+    expect(row.textContent).toBe('Cash100%1');
   });
 });
 

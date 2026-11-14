@@ -53,6 +53,12 @@ Google's browser-only sign-in gives one-hour tokens with no refresh. Sign-in is 
 
 Refresh lives in the app bar, beside Settings, while connected.
 
+## Reports
+
+The chart button in the app bar opens a report for a period: the UK tax year (6 April to 5 April) by default, or a calendar month, stepping back with arrows. It shows clients seen (distinct) and appointments, payment method, and rebooked versus not. Only appointments that have already started count, and hidden ones are left out.
+
+A tax year reaches past the 90-day cache, so the report fetches its period from Google when opened, with queued edits applied. Offline it falls back to saved appointments and says so.
+
 ## Entries
 
 All entries in the window (90 days back, 90 days ahead) from the selected calendars are shown in date order. Completed (green) entries are hidden by default, and any entry can be dismissed; a Settings toggle reveals both. Status filter chips narrow the list further. Settings also holds calendar selection.
