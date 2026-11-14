@@ -4,9 +4,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AgProps, Appointment } from '../model';
 import { AppointmentCard } from './AppointmentCard';
 import { InvoiceDialog } from './InvoiceDialog';
+import { RebookDialog } from './RebookDialog';
 import { HIDE_AFTER_MS, StatusBanner } from './StatusBanner';
 
 afterEach(cleanup);
+
+// jsdom has no <dialog> behaviour.
+HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+  this.setAttribute('open', '');
+};
 
 const appt = (props: AgProps): Appointment => ({
   id: 'e1',
@@ -35,7 +41,8 @@ describe('AppointmentCard', () => {
     [{ ag_notes: '1' }, 'stage-notes', 'Notes written'],
     [{ ag_notes: '1', ag_rebooked: 'e2' }, 'stage-notes', 'Notes written'],
     [{ ag_notes: '1', ag_invoiced: 'x' }, 'stage-invoiced', 'Invoiced'],
-    [{ ag_notes: '1', ag_invoiced: 'x', ag_rebooked: 'e2' }, 'stage-rebooked', 'Rebooked'],
+    [{ ag_notes: '1', ag_invoiced: 'x', ag_rebooked: 'e2' }, 'stage-rebooked', 'Complete'],
+    [{ ag_notes: '1', ag_invoiced: 'x', ag_done: '1' }, 'stage-rebooked', 'Complete'],
   ])('colours %o as %s', (props, className, label) => {
     const { card } = renderCard(props);
     expect(card.classList).toContain(className);
@@ -63,10 +70,20 @@ describe('AppointmentCard', () => {
     }
   });
 
-  it('labels a cash payment as Cash', () => {
-    renderCard({ ag_notes: '1', ag_invoiced: 'x', ag_cash: '1' });
-    expect(screen.getByRole('button', { name: /Cash/ }).getAttribute('aria-pressed')).toBe('true');
+  it.each([
+    [{ ag_paidBy: 'cash' as const }, 'Cash'],
+    [{ ag_cash: '1' }, 'Cash'],
+    [{ ag_paidBy: 'transfer' as const }, 'Transfer'],
+    [{ ag_paidBy: 'link' as const }, 'Invoice'],
+  ])('labels payment %o as %s', (props, label) => {
+    renderCard({ ag_notes: '1', ag_invoiced: 'x', ...props });
+    expect(screen.getByRole('button', { name: new RegExp(label) }).getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByText('Invoiced', { selector: '.stage-label' })).toBeTruthy();
+  });
+
+  it('shows Done when completed without rebooking', () => {
+    renderCard({ ag_notes: '1', ag_invoiced: 'x', ag_done: '1' });
+    expect(screen.getByRole('button', { name: /Done/ }).getAttribute('aria-pressed')).toBe('true');
   });
 
   it('offers to unhide a dismissed entry', () => {
@@ -77,18 +94,44 @@ describe('AppointmentCard', () => {
 });
 
 describe('InvoiceDialog', () => {
-  // jsdom has no <dialog> behaviour.
-  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
-    this.setAttribute('open', '');
+  const dialog = (initialMethod: 'link' | 'cash' | 'transfer') => {
+    const handlers = { onSent: vi.fn(), onPaid: vi.fn(), onClose: vi.fn() };
+    render(<InvoiceDialog appt={appt({ ag_notes: '1' })} initialMethod={initialMethod} {...handlers} />);
+    return handlers;
   };
+  const linkField = () => screen.queryByLabelText('SumUp payment link');
 
-  it('marks paid in cash without needing a link', () => {
-    const onPaidCash = vi.fn();
-    const onSent = vi.fn();
-    render(<InvoiceDialog appt={appt({ ag_notes: '1' })} onSent={onSent} onPaidCash={onPaidCash} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Paid in cash' }));
-    expect(onPaidCash).toHaveBeenCalledOnce();
+  it('starts on the given method', () => {
+    dialog('transfer');
+    expect(screen.getByRole('radio', { name: 'Bank transfer' }).getAttribute('aria-checked')).toBe('true');
+  });
+
+  it('shows the link field only for SumUp', () => {
+    dialog('link');
+    expect(linkField()).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'Cash' }));
+    expect(linkField()).toBeNull();
+  });
+
+  it.each([
+    ['cash', 'Mark paid in cash'],
+    ['transfer', 'Mark paid by transfer'],
+  ] as const)('marks paid by %s without a link', (method, button) => {
+    const { onPaid, onSent } = dialog(method);
+    fireEvent.click(screen.getByRole('button', { name: button }));
+    expect(onPaid).toHaveBeenCalledWith(method);
     expect(onSent).not.toHaveBeenCalled();
+  });
+});
+
+describe('RebookDialog', () => {
+  it('completes without rebooking, even offline', () => {
+    const onComplete = vi.fn();
+    const onRebook = vi.fn();
+    render(<RebookDialog appt={appt({})} connected={false} onRebook={onRebook} onComplete={onComplete} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Complete without rebooking' }));
+    expect(onComplete).toHaveBeenCalledOnce();
+    expect(onRebook).not.toHaveBeenCalled();
   });
 });
 

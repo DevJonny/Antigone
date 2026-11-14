@@ -9,7 +9,7 @@ A static PWA, hosted on GitHub Pages, that lists appointments from one or more G
 | Red | Not started |
 | Orange | Notes written |
 | Yellow | Invoiced |
-| Green | Rebooked |
+| Green | Complete: rebooked, or finished without rebooking |
 
 The colour is the furthest stage reached **in order**. An entry that is rebooked but not invoiced stays orange; as soon as it is invoiced it goes straight to green.
 
@@ -20,12 +20,14 @@ All state lives on the Google Calendar event, in `extendedProperties.private`. T
 | Key | Value |
 | --- | --- |
 | `ag_notes` | `"1"` once notes are written (the notes themselves live in a separate app) |
-| `ag_invoiced` | ISO timestamp when the payment link was sent |
+| `ag_invoiced` | ISO timestamp when invoiced or marked paid |
 | `ag_rebooked` | ID of the follow-up event |
+| `ag_done` | `"1"` if completed without rebooking |
 | `ag_hidden` | `"1"` if dismissed from the list |
 | `ag_client` | Client key (normalised event title) |
 | `ag_payLink` | The client's reusable SumUp payment link |
-| `ag_cash` | `"1"` if paid in cash rather than by link |
+| `ag_paidBy` | `link`, `cash` or `transfer` |
+| `ag_cash` | Legacy `"1"` for cash, from before `ag_paidBy`; still read |
 
 ## Clients and payment links
 
@@ -33,11 +35,13 @@ SumUp's API has no payment-link or invoice endpoints, and its hosted checkouts e
 
 A client is identified by event title. When invoicing, the link is taken from the event, or from any other event with the same client key. Rebooking copies it onto the new event.
 
-Invoicing opens the device share sheet with the link, and marks the event invoiced once shared. Payment is not tracked, except that the invoice dialog has a **Paid in cash** button: it marks the event invoiced without a link, and the card's step reads "Cash".
+The invoice dialog offers three methods: SumUp, Cash and Bank transfer. It opens on the method used for the client's most recently invoiced appointment, or SumUp for a new client. The link field shows only for SumUp. A SumUp invoice opens the device share sheet with the link and marks the event invoiced once shared. Cash and transfer mark it invoiced straight away, and the card's step reads "Cash" or "Transfer". Payment itself is not tracked.
 
 ## Rebooking
 
 Creates a new event on the same calendar with the same title and duration at a chosen date and time. The original records the new event's ID. Rebooking needs a live connection; other edits queue offline.
+
+The rebook dialog can instead **complete without rebooking**, which counts as green and works offline. The card's step then reads "Done".
 
 ## Connection
 

@@ -443,7 +443,7 @@ main {
   margin: 8px 0 0;
 }
 
-.cash-button {
+.wide-button {
   width: 100%;
   margin-top: 16px;
 }
@@ -483,6 +483,13 @@ main {
   background: transparent;
   color: var(--label);
   font-weight: 500;
+}
+
+/* Options of uneven length share space by label width, so none wraps. */
+.segmented.by-label button {
+  flex: auto;
+  padding: 0 10px;
+  white-space: nowrap;
 }
 
 .segmented button[aria-checked='true'] {

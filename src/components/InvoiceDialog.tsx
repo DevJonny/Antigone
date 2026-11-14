@@ -1,18 +1,26 @@
 import { useState } from 'react';
-import type { Appointment } from '../model';
+import type { Appointment, PayMethod } from '../model';
 import { Modal } from './Modal';
 
 interface Props {
   appt: Appointment;
   initialLink?: string;
+  initialMethod: PayMethod;
   onSent: (link: string) => void;
-  onPaidCash: () => void;
+  onPaid: (method: Exclude<PayMethod, 'link'>) => void;
   onClose: () => void;
 }
 
+const METHODS: { method: PayMethod; label: string }[] = [
+  { method: 'link', label: 'SumUp' },
+  { method: 'cash', label: 'Cash' },
+  { method: 'transfer', label: 'Bank transfer' },
+];
+
 const canShare = typeof navigator.share === 'function';
 
-export function InvoiceDialog({ appt, initialLink, onSent, onPaidCash, onClose }: Props) {
+export function InvoiceDialog({ appt, initialLink, initialMethod, onSent, onPaid, onClose }: Props) {
+  const [method, setMethod] = useState(initialMethod);
   const [link, setLink] = useState(initialLink ?? '');
   const [error, setError] = useState<string | null>(null);
   const valid = /^https:\/\/\S+$/.test(link.trim());
@@ -39,20 +47,38 @@ export function InvoiceDialog({ appt, initialLink, onSent, onPaidCash, onClose }
 
   return (
     <Modal title={`Invoice ${appt.title}`} onClose={onClose}>
-      <label className="field">
-        <span>SumUp payment link</span>
-        <input type="url" inputMode="url" placeholder="https://pay.sumup.com/…" value={link} onChange={(e) => setLink(e.target.value)} />
-      </label>
-      {!initialLink && (
-        <p className="hint">Create a reusable payment link for this client in the SumUp app, then paste it here. It's remembered for next time.</p>
-      )}
-      {error && <p className="error">{error}</p>}
-      <button className="tonal cash-button" onClick={onPaidCash}>Paid in cash</button>
-      <div className="actions">
-        <button className="text" onClick={onClose}>Cancel</button>
-        <button onClick={copy} disabled={!valid} className={canShare ? 'tonal' : 'primary'}>Copy and mark invoiced</button>
-        {canShare && <button className="primary" onClick={share} disabled={!valid}>Share link</button>}
+      <div className="segmented by-label" role="radiogroup" aria-label="Payment method">
+        {METHODS.map((m) => (
+          <button key={m.method} role="radio" aria-checked={method === m.method} onClick={() => setMethod(m.method)}>
+            {m.label}
+          </button>
+        ))}
       </div>
+
+      {method === 'link' ? (
+        <>
+          <label className="field">
+            <span>SumUp payment link</span>
+            <input type="url" inputMode="url" placeholder="https://pay.sumup.com/…" value={link} onChange={(e) => setLink(e.target.value)} />
+          </label>
+          {!initialLink && (
+            <p className="hint">Create a reusable payment link for this client in the SumUp app, then paste it here. It's remembered for next time.</p>
+          )}
+          {error && <p className="error">{error}</p>}
+          <div className="actions">
+            <button className="text" onClick={onClose}>Cancel</button>
+            <button onClick={copy} disabled={!valid} className={canShare ? 'tonal' : 'primary'}>Copy and mark invoiced</button>
+            {canShare && <button className="primary" onClick={share} disabled={!valid}>Share link</button>}
+          </div>
+        </>
+      ) : (
+        <div className="actions">
+          <button className="text" onClick={onClose}>Cancel</button>
+          <button className="primary" onClick={() => onPaid(method)}>
+            {method === 'cash' ? 'Mark paid in cash' : 'Mark paid by transfer'}
+          </button>
+        </div>
+      )}
     </Modal>
   );
 }

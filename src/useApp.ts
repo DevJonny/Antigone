@@ -11,7 +11,7 @@ import {
   patchProps,
   type CalendarInfo,
 } from './calendar';
-import { applyEdits, clientKey, findPayLink, queueEdit, type AgPatch, type Appointment, type Edit } from './model';
+import { applyEdits, clientKey, findPayLink, queueEdit, type AgPatch, type Appointment, type Edit, type PayMethod } from './model';
 import { rebookBody } from './rebook';
 
 export type Connection = 'unconfigured' | 'connected' | 'offline' | 'signedOut';
@@ -189,12 +189,12 @@ export function useApp() {
   }, [updateQueue, sync]);
 
   const markInvoiced = useCallback((appt: Appointment, payLink: string) => {
-    edit(appt, { ag_invoiced: new Date().toISOString(), ag_cash: null, ag_payLink: payLink, ag_client: clientKey(appt.title) });
+    edit(appt, { ag_invoiced: new Date().toISOString(), ag_paidBy: 'link', ag_cash: null, ag_payLink: payLink, ag_client: clientKey(appt.title) });
   }, [edit]);
 
-  /** Cash counts as invoiced; the client's payment link is left as it is. */
-  const markPaidCash = useCallback((appt: Appointment) => {
-    edit(appt, { ag_invoiced: new Date().toISOString(), ag_cash: '1', ag_client: clientKey(appt.title) });
+  /** Cash and bank transfer count as invoiced; the client's payment link is left as it is. */
+  const markPaid = useCallback((appt: Appointment, method: Exclude<PayMethod, 'link'>) => {
+    edit(appt, { ag_invoiced: new Date().toISOString(), ag_paidBy: method, ag_cash: null, ag_client: clientKey(appt.title) });
   }, [edit]);
 
   /** Needs a live connection: the new event's ID must exist before the original can point to it. */
@@ -237,7 +237,7 @@ export function useApp() {
     sync,
     edit,
     markInvoiced,
-    markPaidCash,
+    markPaid,
     rebook,
     chooseCalendars,
   };

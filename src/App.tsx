@@ -6,7 +6,7 @@ import { RebookDialog } from './components/RebookDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBanner } from './components/StatusBanner';
 import { listView, STAGES } from './list';
-import { findPayLink, type Appointment, type Stage } from './model';
+import { defaultPayMethod, findPayLink, paymentOf, type Appointment, type Stage } from './model';
 import { applyTheme, THEME_KEY, type Theme } from './theme';
 import { useApp } from './useApp';
 
@@ -134,11 +134,13 @@ export function App() {
                   }}
                   onInvoice={() => {
                     if (!a.props.ag_invoiced) setDialog({ kind: 'invoice', appt: a });
-                    else if (confirmUndo(a.props.ag_cash ? 'Mark as not paid?' : 'Mark as not invoiced?'))
-                      app.edit(a, { ag_invoiced: null, ag_cash: null });
+                    else if (confirmUndo(paymentOf(a.props) === 'link' ? 'Mark as not invoiced?' : 'Mark as not paid?'))
+                      app.edit(a, { ag_invoiced: null, ag_paidBy: null, ag_cash: null });
                   }}
                   onRebook={() => {
-                    if (!a.props.ag_rebooked) setDialog({ kind: 'rebook', appt: a });
+                    if (a.props.ag_done) {
+                      if (confirmUndo('Mark as not complete?')) app.edit(a, { ag_done: null });
+                    } else if (!a.props.ag_rebooked) setDialog({ kind: 'rebook', appt: a });
                     else if (confirmUndo('Mark as not rebooked? The follow-up appointment stays in your calendar.'))
                       app.edit(a, { ag_rebooked: null });
                   }}
@@ -154,12 +156,13 @@ export function App() {
         <InvoiceDialog
           appt={dialog.appt}
           initialLink={findPayLink(dialog.appt, app.appointments)}
+          initialMethod={defaultPayMethod(dialog.appt, app.appointments)}
           onSent={(link) => {
             app.markInvoiced(dialog.appt, link);
             setDialog(null);
           }}
-          onPaidCash={() => {
-            app.markPaidCash(dialog.appt);
+          onPaid={(method) => {
+            app.markPaid(dialog.appt, method);
             setDialog(null);
           }}
           onClose={() => setDialog(null)}
@@ -170,6 +173,10 @@ export function App() {
           appt={dialog.appt}
           connected={app.connection === 'connected'}
           onRebook={(start) => app.rebook(dialog.appt, start)}
+          onComplete={() => {
+            app.edit(dialog.appt, { ag_done: '1' });
+            setDialog(null);
+          }}
           onClose={() => setDialog(null)}
         />
       )}

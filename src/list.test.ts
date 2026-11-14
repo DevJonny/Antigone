@@ -34,7 +34,7 @@ describe('listView', () => {
     expect(ids(listView(appts, { hideTucked: false, stages: ALL }).days)).toEqual(['todo', 'notes', 'complete', 'dismissed']);
   });
 
-  it('drops the Rebooked filter only while completed entries are hidden', () => {
+  it('drops the Complete filter only while completed entries are hidden', () => {
     const stages = (hideTucked: boolean) => listView(appts, { hideTucked, stages: ALL }).filters.map((f) => f.stage);
     expect(stages(true)).toEqual(['start', 'notes', 'invoiced']);
     expect(stages(false)).toEqual(ALL);

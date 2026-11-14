@@ -7,10 +7,11 @@ interface Props {
   appt: Appointment;
   connected: boolean;
   onRebook: (start: string) => Promise<void>;
+  onComplete: () => void;
   onClose: () => void;
 }
 
-export function RebookDialog({ appt, connected, onRebook, onClose }: Props) {
+export function RebookDialog({ appt, connected, onRebook, onComplete, onClose }: Props) {
   const [start, setStart] = useState(() => defaultRebookStart(appt.start, appt.allDay));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ export function RebookDialog({ appt, connected, onRebook, onClose }: Props) {
       {!appt.allDay && <p className="hint">Same length as this appointment ({minutes} minutes).</p>}
       {!connected && <p className="error">Rebooking needs a connection to Google. Reconnect first.</p>}
       {error && <p className="error">{error}</p>}
+      <button className="tonal wide-button" onClick={onComplete}>Complete without rebooking</button>
       <div className="actions">
         <button className="text" onClick={onClose}>Cancel</button>
         <button className="primary" onClick={submit} disabled={!connected || !start || saving}>

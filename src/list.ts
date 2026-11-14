@@ -4,7 +4,7 @@ export const STAGES: { stage: Stage; label: string }[] = [
   { stage: 'start', label: 'To do' },
   { stage: 'notes', label: 'Notes written' },
   { stage: 'invoiced', label: 'Invoiced' },
-  { stage: 'rebooked', label: 'Rebooked' },
+  { stage: 'rebooked', label: 'Complete' },
 ];
 
 export const STAGE_LABEL = Object.fromEntries(STAGES.map((s) => [s.stage, s.label])) as Record<Stage, string>;

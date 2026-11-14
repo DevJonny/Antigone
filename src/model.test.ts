@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyEdits, clientKey, findPayLink, queueEdit, stageOf, type Appointment } from './model';
+import { applyEdits, clientKey, defaultPayMethod, findPayLink, paymentOf, queueEdit, stageOf, type Appointment } from './model';
 
 const appt = (over: Partial<Appointment> = {}): Appointment => ({
   id: 'e1',
@@ -23,6 +23,11 @@ describe('stageOf', () => {
     expect(stageOf({ ag_notes: '1', ag_invoiced: 'x', ag_rebooked: 'e2' })).toBe('rebooked');
   });
 
+  it('counts completing without rebooking as the last step', () => {
+    expect(stageOf({ ag_notes: '1', ag_invoiced: 'x', ag_done: '1' })).toBe('rebooked');
+    expect(stageOf({ ag_notes: '1', ag_done: '1' })).toBe('notes');
+  });
+
   it('stays orange when rebooked but not invoiced', () => {
     expect(stageOf({ ag_notes: '1', ag_rebooked: 'e2' })).toBe('notes');
   });
@@ -35,6 +40,32 @@ describe('stageOf', () => {
 describe('clientKey', () => {
   it('ignores case and surrounding or repeated whitespace', () => {
     expect(clientKey('  Jane   SMITH ')).toBe('jane smith');
+  });
+});
+
+describe('paymentOf', () => {
+  it('is undefined until invoiced', () => {
+    expect(paymentOf({ ag_paidBy: 'cash' })).toBeUndefined();
+  });
+
+  it('reads the method, the legacy cash flag, or defaults to a link', () => {
+    expect(paymentOf({ ag_invoiced: 'x', ag_paidBy: 'transfer' })).toBe('transfer');
+    expect(paymentOf({ ag_invoiced: 'x', ag_cash: '1' })).toBe('cash');
+    expect(paymentOf({ ag_invoiced: 'x' })).toBe('link');
+  });
+});
+
+describe('defaultPayMethod', () => {
+  it("uses the client's most recently invoiced method", () => {
+    const target = appt();
+    const older = appt({ id: 'e2', props: { ag_invoiced: '2026-10-01T00:00:00Z', ag_paidBy: 'cash' } });
+    const newer = appt({ id: 'e3', props: { ag_invoiced: '2026-10-20T00:00:00Z', ag_paidBy: 'transfer' } });
+    expect(defaultPayMethod(target, [newer, target, older])).toBe('transfer');
+  });
+
+  it('ignores other clients and falls back to a link', () => {
+    const other = appt({ id: 'e2', title: 'Bob', props: { ag_invoiced: 'x', ag_paidBy: 'cash' } });
+    expect(defaultPayMethod(appt(), [other])).toBe('link');
   });
 });
 

@@ -5,9 +5,15 @@ export interface AgProps {
   ag_hidden?: string;
   ag_client?: string;
   ag_payLink?: string;
-  /** "1" when paid in cash; set alongside `ag_invoiced`. */
+  /** How it was paid; set alongside `ag_invoiced`. */
+  ag_paidBy?: PayMethod;
+  /** Legacy: "1" when paid in cash, from before `ag_paidBy`. */
   ag_cash?: string;
+  /** "1" when finished without rebooking. */
+  ag_done?: string;
 }
+
+export type PayMethod = 'link' | 'cash' | 'transfer';
 
 /** A pending change to an event's private properties. `null` removes a value. */
 export type AgPatch = { [K in keyof AgProps]?: string | null };
@@ -34,8 +40,25 @@ export type Stage = 'start' | 'notes' | 'invoiced' | 'rebooked';
 export function stageOf(props: AgProps): Stage {
   if (!props.ag_notes) return 'start';
   if (!props.ag_invoiced) return 'notes';
-  if (!props.ag_rebooked) return 'invoiced';
+  if (!props.ag_rebooked && !props.ag_done) return 'invoiced';
   return 'rebooked';
+}
+
+/** How an invoiced event was paid; undefined until invoiced. */
+export function paymentOf(props: AgProps): PayMethod | undefined {
+  if (!props.ag_invoiced) return undefined;
+  return props.ag_paidBy ?? (props.ag_cash ? 'cash' : 'link');
+}
+
+/** The method to offer first: this event's own, else the client's most recent, else a link. */
+export function defaultPayMethod(target: Appointment, all: Appointment[]): PayMethod {
+  const own = paymentOf(target.props);
+  if (own) return own;
+  const key = clientKey(target.title);
+  const latest = all
+    .filter((a) => a.props.ag_invoiced && (a.props.ag_client ?? clientKey(a.title)) === key)
+    .reduce<Appointment | undefined>((best, a) => (!best || a.props.ag_invoiced! > best.props.ag_invoiced! ? a : best), undefined);
+  return (latest && paymentOf(latest.props)) ?? 'link';
 }
 
 export function clientKey(title: string): string {

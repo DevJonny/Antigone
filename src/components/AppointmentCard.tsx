@@ -1,5 +1,7 @@
 import { STAGE_LABEL } from '../list';
-import { stageOf, type Appointment } from '../model';
+import { paymentOf, stageOf, type Appointment } from '../model';
+
+const PAID_LABEL = { link: 'Invoice', cash: 'Cash', transfer: 'Transfer' } as const;
 import { Icon } from './Icon';
 
 const timeRange = (a: Appointment) => {
@@ -39,8 +41,8 @@ export function AppointmentCard({ appt, calendarName, onToggleNotes, onInvoice, 
       </div>
       <div className="steps">
         <Step done={Boolean(props.ag_notes)} onClick={onToggleNotes}>Notes</Step>
-        <Step done={Boolean(props.ag_invoiced)} onClick={onInvoice}>{props.ag_invoiced && props.ag_cash ? 'Cash' : 'Invoice'}</Step>
-        <Step done={Boolean(props.ag_rebooked)} onClick={onRebook}>Rebook</Step>
+        <Step done={Boolean(props.ag_invoiced)} onClick={onInvoice}>{PAID_LABEL[paymentOf(props) ?? 'link']}</Step>
+        <Step done={Boolean(props.ag_rebooked || props.ag_done)} onClick={onRebook}>{props.ag_done ? 'Done' : 'Rebook'}</Step>
       </div>
     </li>
   );
