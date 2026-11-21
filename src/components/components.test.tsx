@@ -31,6 +31,9 @@ function renderCard(props: AgProps) {
     onInvoice: vi.fn(),
     onRebook: vi.fn(),
     onToggleHidden: vi.fn(),
+    onAddTask: vi.fn(),
+    onToggleTask: vi.fn(),
+    onRemoveTask: vi.fn(),
   };
   const { container } = render(<AppointmentCard appt={appt(props)} {...handlers} />);
   return { card: container.querySelector('li')!, handlers };
@@ -85,6 +88,40 @@ describe('AppointmentCard', () => {
   it('shows Done when completed without rebooking', () => {
     renderCard({ ag_notes: '1', ag_invoiced: 'x', ag_done: '1' });
     expect(screen.getByRole('button', { name: /Done/ }).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  describe('tasks', () => {
+    const withTasks = { ag_task_a: '0Send exercises', ag_task_b: '1Book scan' };
+
+    it('lists tasks in order, pressing done ones', () => {
+      const { card } = renderCard(withTasks);
+      const tasks = [...card.querySelectorAll('.task')];
+      expect(tasks.map((b) => [b.textContent, b.getAttribute('aria-pressed')])).toEqual([
+        ['Send exercises', 'false'],
+        ['Book scan', 'true'],
+      ]);
+    });
+
+    it('toggles and removes a task', () => {
+      const { handlers } = renderCard(withTasks);
+      fireEvent.click(screen.getByRole('button', { name: 'Send exercises' }));
+      expect(handlers.onToggleTask).toHaveBeenCalledWith({ key: 'ag_task_a', text: 'Send exercises', done: false });
+      fireEvent.click(screen.getByRole('button', { name: 'Remove task: Book scan' }));
+      expect(handlers.onRemoveTask).toHaveBeenCalledWith({ key: 'ag_task_b', text: 'Book scan', done: true });
+    });
+
+    it('adds tasks one after another', () => {
+      const { handlers } = renderCard({});
+      fireEvent.click(screen.getByRole('button', { name: 'Add task' }));
+      const input = screen.getByRole('textbox', { name: 'New task' });
+      fireEvent.change(input, { target: { value: 'Call GP' } });
+      fireEvent.submit(input);
+      fireEvent.change(input, { target: { value: '  ' } });
+      fireEvent.submit(input);
+      expect(handlers.onAddTask).toHaveBeenCalledOnce();
+      expect(handlers.onAddTask).toHaveBeenCalledWith('Call GP');
+      expect((input as HTMLInputElement).value).toBe('');
+    });
   });
 
   it('offers to unhide a dismissed entry', () => {

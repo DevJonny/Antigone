@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { applyEdits, clientKey, defaultPayMethod, findPayLink, paymentOf, queueEdit, stageOf, type Appointment } from './model';
+import {
+  applyEdits,
+  clientKey,
+  defaultPayMethod,
+  findPayLink,
+  openTasks,
+  paymentOf,
+  queueEdit,
+  stageOf,
+  taskKey,
+  tasksOf,
+  taskValue,
+  type Appointment,
+} from './model';
 
 const appt = (over: Partial<Appointment> = {}): Appointment => ({
   id: 'e1',
@@ -28,6 +41,12 @@ describe('stageOf', () => {
     expect(stageOf({ ag_notes: '1', ag_done: '1' })).toBe('notes');
   });
 
+  it('holds back completion while tasks are open', () => {
+    const done = { ag_notes: '1', ag_invoiced: 'x', ag_rebooked: 'e2' };
+    expect(stageOf({ ...done, ag_task_a: '0Call GP' })).toBe('invoiced');
+    expect(stageOf({ ...done, ag_task_a: '1Call GP' })).toBe('rebooked');
+  });
+
   it('stays orange when rebooked but not invoiced', () => {
     expect(stageOf({ ag_notes: '1', ag_rebooked: 'e2' })).toBe('notes');
   });
@@ -40,6 +59,24 @@ describe('stageOf', () => {
 describe('clientKey', () => {
   it('ignores case and surrounding or repeated whitespace', () => {
     expect(clientKey('  Jane   SMITH ')).toBe('jane smith');
+  });
+});
+
+describe('tasks', () => {
+  it('reads tasks in the order added, ignoring other keys', () => {
+    const k1 = taskKey(35); // 'z': one base-36 digit
+    const k2 = taskKey(36); // '10': added later, so it sorts after despite the string order
+    const props = { ag_notes: '1', [k2]: taskValue('Second', true), [k1]: taskValue('First', false) };
+    expect(tasksOf(props)).toEqual([
+      { key: k1, text: 'First', done: false },
+      { key: k2, text: 'Second', done: true },
+    ]);
+    expect(openTasks(props)).toBe(1);
+  });
+
+  it('trims text and keeps values under Google\'s limit', () => {
+    expect(taskValue('  Call GP ', false)).toBe('0Call GP');
+    expect(taskValue('x'.repeat(2000), true)).toHaveLength(1001);
   });
 });
 

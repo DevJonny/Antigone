@@ -11,7 +11,33 @@ export interface AgProps {
   ag_cash?: string;
   /** "1" when finished without rebooking. */
   ag_done?: string;
+  /** One key per task: "0" or "1" (done) followed by the text. Never copied to a rebooking. */
+  [task: `${typeof TASK_PREFIX}${string}`]: string;
 }
+
+export const TASK_PREFIX = 'ag_task_';
+/** Google truncates values past 1024 characters; one is used by the done flag. */
+export const TASK_MAX = 1000;
+
+export interface Task {
+  key: `${typeof TASK_PREFIX}${string}`;
+  text: string;
+  done: boolean;
+}
+
+/** Tasks in the order they were added. Keys are base-36 times, so they sort as added. */
+export function tasksOf(props: AgProps): Task[] {
+  return Object.entries(props)
+    .filter((e): e is [Task['key'], string] => e[0].startsWith(TASK_PREFIX) && typeof e[1] === 'string')
+    .sort(([a], [b]) => (a.length - b.length) || (a < b ? -1 : a > b ? 1 : 0))
+    .map(([key, value]) => ({ key, text: value.slice(1), done: value[0] === '1' }));
+}
+
+export const openTasks = (props: AgProps) => tasksOf(props).filter((t) => !t.done).length;
+
+export const taskKey = (now = Date.now()): Task['key'] => `${TASK_PREFIX}${now.toString(36)}`;
+
+export const taskValue = (text: string, done: boolean) => `${done ? '1' : '0'}${text.trim().slice(0, TASK_MAX)}`;
 
 export type PayMethod = 'link' | 'cash' | 'transfer';
 
@@ -36,11 +62,14 @@ export interface Edit {
 
 export type Stage = 'start' | 'notes' | 'invoiced' | 'rebooked';
 
-/** Steps count only in order, so a later step done early doesn't change the colour. */
+/**
+ * Steps count only in order, so a later step done early doesn't change the colour.
+ * An entry with open tasks can't be complete.
+ */
 export function stageOf(props: AgProps): Stage {
   if (!props.ag_notes) return 'start';
   if (!props.ag_invoiced) return 'notes';
-  if (!props.ag_rebooked && !props.ag_done) return 'invoiced';
+  if ((!props.ag_rebooked && !props.ag_done) || openTasks(props) > 0) return 'invoiced';
   return 'rebooked';
 }
 

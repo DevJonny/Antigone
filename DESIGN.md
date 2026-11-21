@@ -11,7 +11,7 @@ A static PWA, hosted on GitHub Pages, that lists appointments from one or more G
 | Yellow | Invoiced |
 | Green | Complete: rebooked, or finished without rebooking |
 
-The colour is the furthest stage reached **in order**. An entry that is rebooked but not invoiced stays orange; as soon as it is invoiced it goes straight to green.
+The colour is the furthest stage reached **in order**. An entry that is rebooked but not invoiced stays orange; as soon as it is invoiced it goes straight to green. An entry with open tasks can't go green: it stays yellow until every task is ticked.
 
 ## Storage
 
@@ -26,6 +26,7 @@ All state lives on the Google Calendar event, in `extendedProperties.private`. T
 | `ag_hidden` | `"1"` if dismissed from the list |
 | `ag_client` | Client key (normalised event title) |
 | `ag_payLink` | The client's reusable SumUp payment link |
+| `ag_task_<id>` | One per task: `"0"` or `"1"` (done) then the text, up to 1000 characters. `<id>` is the base-36 time it was added |
 | `ag_paidBy` | `link`, `cash` or `transfer` |
 | `ag_cash` | Legacy `"1"` for cash, from before `ag_paidBy`; still read |
 
@@ -52,6 +53,10 @@ Google's browser-only sign-in gives one-hour tokens with no refresh. Sign-in is 
 - **Red** — signed out or token expired; a Reconnect button.
 
 Refresh lives in the app bar, beside Settings, while connected.
+
+## Tasks
+
+Any entry can carry a checklist of tasks, added and ticked on the card. Tasks belong to that appointment only: rebooking doesn't copy them. Each task is its own key, so edits from two devices merge, and no single value nears Google's 1024-character limit. Removing a task asks first.
 
 ## Reports
 

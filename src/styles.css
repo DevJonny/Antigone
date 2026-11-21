@@ -367,6 +367,62 @@ main {
   margin-top: 12px;
 }
 
+/* Tasks: a checklist under the steps, kept only on this appointment. */
+.tasks ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.tasks li {
+  display: flex;
+  align-items: center;
+  margin: 0 -8px 8px 0;
+}
+
+/* Same look as the step buttons, full width so longer text wraps. */
+.step.task {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.tasks .icon-button {
+  color: var(--label-2);
+}
+
+.tasks form {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tasks form input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--fill);
+  color: var(--label);
+  font: inherit;
+  font-size: 17px;
+}
+
+.add-task {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 0 -8px;
+  color: var(--tint);
+}
+
 .step {
   flex: 1;
   padding: 0 8px;

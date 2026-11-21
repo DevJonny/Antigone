@@ -7,7 +7,7 @@ import { ReportDialog } from './components/ReportDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { StatusBanner } from './components/StatusBanner';
 import { listView, STAGES } from './list';
-import { defaultPayMethod, findPayLink, paymentOf, type Appointment, type Stage } from './model';
+import { defaultPayMethod, findPayLink, paymentOf, taskKey, taskValue, type Appointment, type Stage } from './model';
 import { applyTheme, THEME_KEY, type Theme } from './theme';
 import { useApp } from './useApp';
 
@@ -149,6 +149,9 @@ export function App() {
                       app.edit(a, { ag_rebooked: null });
                   }}
                   onToggleHidden={() => app.edit(a, { ag_hidden: a.props.ag_hidden ? null : '1' })}
+                  onAddTask={(text) => app.edit(a, { [taskKey()]: taskValue(text, false) })}
+                  onToggleTask={(t) => app.edit(a, { [t.key]: taskValue(t.text, !t.done) })}
+                  onRemoveTask={(t) => confirmUndo(`Remove "${t.text}"?`) && app.edit(a, { [t.key]: null })}
                 />
               ))}
             </ul>
